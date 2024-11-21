@@ -2377,7 +2377,7 @@ local function osc_init()
     ne.tooltip_style = osc_styles.tooltip
     ne.tooltipF = function () return user_opts.tooltip_hints and (mp.get_property("ontop") == "no" and locale.ontop or locale.ontop_disable) or "" end
     ne.visible = (osc_param.playresx >= 850 - outeroffset - (user_opts.info_button and 0 or 100) - (user_opts.fullscreen_button and 0 or 100))
-    ne.eventresponder["mbtn_left_up"] = function () 
+    ne.eventresponder["mbtn_right_up"] = function () 
         mp.commandv("cycle", "ontop") 
         if state.initialborder == "yes" then
             if mp.get_property("ontop") == "yes" then
@@ -2387,7 +2387,7 @@ local function osc_init()
             end
         end
     end
-    ne.eventresponder["mbtn_right_up"] = function () 
+    ne.eventresponder["mbtn_left_up"] = function () 
         mp.commandv("cycle", "ontop")
         if mp.get_property("border") == "no" then
             mp.commandv("set", "border", "yes")
