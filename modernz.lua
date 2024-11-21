@@ -2139,17 +2139,41 @@ local function osc_init()
     ne = new_element("jump_backward", "button")
     ne.softrepeat = user_opts.jump_softrepeat == true
     ne.content = jump_icon[1]
-    ne.eventresponder["mbtn_left_down"] = function () mp.commandv("seek", -jump_amount, jump_mode) end
-    ne.eventresponder["mbtn_right_down"] = function () mp.commandv("seek", -jump_more_amount, jump_mode) end
-    ne.eventresponder["shift+mbtn_left_down"] = function () mp.commandv("frame-back-step") end
+    ne.eventresponder["mbtn_left_down"] = 
+        function ()
+            mp.commandv("seek", -jump_amount, jump_mode)
+            mp.osd_message(get_progress_osd_msg(false))
+        end
+    ne.eventresponder["mbtn_right_down"] =
+        function ()
+            mp.commandv("seek", -jump_more_amount, jump_mode)
+            mp.osd_message(get_progress_osd_msg(false))
+        end
+    ne.eventresponder["shift+mbtn_left_down"] =
+        function ()
+            mp.commandv("frame-back-step")
+            mp.osd_message(get_progress_osd_msg(false))
+        end
 
     --jump_forward
     ne = new_element("jump_forward", "button")
     ne.softrepeat = user_opts.jump_softrepeat == true
     ne.content = jump_icon[2]
-    ne.eventresponder["mbtn_left_down"] = function () mp.commandv("seek", jump_amount, jump_mode) end
-    ne.eventresponder["mbtn_right_down"] = function () mp.commandv("seek", jump_more_amount, jump_mode) end
-    ne.eventresponder["shift+mbtn_left_down"] = function () mp.commandv("frame-step") end
+    ne.eventresponder["mbtn_left_down"] =
+        function ()
+            mp.commandv("seek", jump_amount, jump_mode)
+            mp.osd_message(get_progress_osd_msg(true))
+        end
+    ne.eventresponder["mbtn_right_down"] =
+        function ()
+            mp.commandv("seek", jump_more_amount, jump_mode)
+            mp.osd_message(get_progress_osd_msg(true))
+        end
+    ne.eventresponder["shift+mbtn_left_down"] =
+        function ()
+            mp.commandv("frame-step")
+            mp.osd_message(get_progress_osd_msg(true))
+        end
 
     --chapter_backward
     ne = new_element("chapter_backward", "button")
@@ -3142,6 +3166,18 @@ tick = function()
             kill_animation()
         end
     end
+end
+
+function get_progress_osd_msg(is_forward)
+    local playback_time = mp.get_property_osd('playback-time')
+    local duration = mp.get_property_osd('duration')
+    local percent_pos = mp.get_property_osd('percent-pos')
+    -- From enum mp_osd_font_codepoints (https://github.com/mpv-player/mpv/blob/master/sub/osd.h)
+    local osd_symbol = 4
+    if is_forward then
+        osd_symbol = 5
+    end
+    return string.format('\255%c %s / %s (%s%%)', osd_symbol, playback_time, duration, percent_pos)
 end
 
 local function shutdown()
