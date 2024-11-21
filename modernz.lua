@@ -1580,9 +1580,13 @@ local layouts = {}
 
 -- Default layout
 layouts["modern"] = function ()
+    local height = 120
+    if user_opts.show_title then
+        height = 160
+    end
     local osc_geo = {
         w = osc_param.playresx,
-        h = 180
+        h = height
     }
 
     -- origin of the controllers, left/bottom corner
