@@ -67,7 +67,7 @@ local user_opts = {
 
     -- Subtitle display settings
     raise_subtitles = true,                -- raise subtitles above the OSC when shown
-    raise_subtitle_amount = 175,           -- amount by which subtitles are raised when the OSC is shown (in pixels)
+    raise_subtitle_amount = 165,           -- amount by which subtitles are raised when the OSC is shown (in pixels)
 
     -- Buttons display and functionality
     jump_buttons = true,                   -- show the jump backward and forward buttons
@@ -116,9 +116,9 @@ local user_opts = {
     windowcontrols_close_hover = "#E81123", -- color of close window control on hover
     windowcontrols_minmax_hover = "#FFD700", -- color of min/max window controls on hover
     title_color = "#FFFFFF",               -- color of the title (above seekbar)
-    seekbarfg_color = "#BE4D25",           -- color of the seekbar progress and handle
-    seekbarbg_color = "#FFFFFF",           -- color of the remaining seekbar
-    seekbar_cache_color = "#BE254A",       -- color of the cache ranges on the seekbar
+    seekbarfg_color = "#FB8C00",           -- color of the seekbar progress and handle
+    seekbarbg_color = "#94754F",           -- color of the remaining seekbar
+    seekbar_cache_color = "#918F8E",       -- color of the cache ranges on the seekbar
     volumebar_match_seek_color = false,    -- match volume bar color with seekbar color (ignores side_buttons_color)
     time_color = "#FFFFFF",                -- color of the timestamps (below seekbar)
     chapter_title_color = "#FFFFFF",       -- color of the chapter title next to timestamp (below seekbar)
@@ -1580,13 +1580,9 @@ local layouts = {}
 
 -- Default layout
 layouts["modern"] = function ()
-    local height = 120
-    if user_opts.show_title then
-        height = 160
-    end
     local osc_geo = {
         w = osc_param.playresx,
-        h = height
+        h = not user_opts.show_title and 110 or 160
     }
 
     -- origin of the controllers, left/bottom corner
@@ -1837,7 +1833,7 @@ end
 layouts["modern-image"] = function ()
     local osc_geo = {
         w = osc_param.playresx,
-        h = 180
+        h = 110
     }
 
     -- origin of the controllers, left/bottom corner
@@ -1888,7 +1884,7 @@ layouts["modern-image"] = function ()
     local zoom_control = user_opts.zoom_control
 
     local offset = 0
-    local outeroffset = 90
+    local outeroffset = (chapter_skip_buttons and 0 or 100) + (jump_buttons and 0 or 100)
 
     -- Playlist
     if playlist_button then
@@ -1915,7 +1911,7 @@ layouts["modern-image"] = function ()
         lo.style = osc_styles.control_2
 
         lo = new_element("zoom_control_bg", "box")
-        lo.visible = osc_param.playresx >= 790 - outeroffset and user_opts.zoom_control
+        lo.visible = osc_param.playresx >= 650 - outeroffset and user_opts.zoom_control
         lo = add_layout("zoom_control_bg")
         lo.geometry = {x = 145 - (playlist_button and 0 or 25) - (track_nextprev_buttons and 0 or 70), y = refY - 40, an = 4, w = 80, h = 4}
         lo.layer = 13
