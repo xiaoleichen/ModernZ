@@ -146,7 +146,7 @@ local user_opts = {
 
     -- Progress bar settings 
     seekbarhandlesize = 0.8,               -- size ratio of the seekbar handle (range: 0 ~ 1)
-    handle_always_visible = false,         -- control handle visibility: "true" always visible, "false" show on slider hover
+    handle_always_visible = true,          -- control handle visibility: "true" always visible, "false" show on slider hover
     seekrange = true,                      -- show seek range overlay
     seekrangealpha = 150,                  -- transparency of the seek range
     livemarkers = true,                    -- update chapter markers on the seekbar when duration changes
@@ -431,6 +431,7 @@ local state = {
     border = true,
     maximized = false,
     osd = mp.create_osd_overlay("ass-events"),
+    temp_visibility_mode = nil,             -- store temporary visibility mode state
     chapter_list = {},                      -- sorted by time
     mute = false,
     looping = false,
@@ -1649,6 +1650,8 @@ layouts["modern"] = function ()
         lo.slider.tooltip_an = 0   
     end
 
+    local audio_track = audio_track_count > 0
+    local subtitle_track = sub_track_count > 0
     local jump_buttons = user_opts.jump_buttons
     local chapter_skip_buttons = user_opts.chapter_skip_buttons
     local track_nextprev_buttons = user_opts.track_nextprev_buttons
@@ -1738,46 +1741,52 @@ layouts["modern"] = function ()
     end
 
     -- Audio
-    lo = add_layout("audio_track")
-    lo.geometry = {x = 37, y = refY - 40, an = 5, w = 24, h = 24}
-    lo.style = osc_styles.control_3
-    lo.visible = (osc_param.playresx >= 500 - outeroffset)
+    if audio_track then
+        lo = add_layout("audio_track")
+        lo.geometry = {x = 37, y = refY - 40, an = 5, w = 24, h = 24}
+        lo.style = osc_styles.control_3
+        lo.visible = (osc_param.playresx >= 500 - outeroffset)
+    end
 
     -- Subtitle
-    lo = add_layout("sub_track")
-    lo.geometry = {x = 82, y = refY - 40, an = 5, w = 24, h = 24}
-    lo.style = osc_styles.control_3
-    lo.visible = (osc_param.playresx >= 600 - outeroffset)
-
-    -- Playlist
-    if playlist_button then
-        lo = add_layout("tog_playlist")
-        lo.geometry = {x = 127, y = refY - 40, an = 5, w = 24, h = 24}
+    if subtitle_track then
+        lo = add_layout("sub_track")
+        lo.geometry = {x = 82 - (audio_track and 0 or 45), y = refY - 40, an = 5, w = 24, h = 24}
         lo.style = osc_styles.control_3
         lo.visible = (osc_param.playresx >= 600 - outeroffset)
     end
 
-    -- Volume
-    lo = add_layout("vol_ctrl")
-    lo.geometry = {x = 172 - (playlist_button and 0 or 45), y = refY - 40, an = 5, w = 24, h = 24}
-    lo.style = osc_styles.control_3
-    lo.visible = (osc_param.playresx >= 600 - outeroffset)
+    -- Playlist
+    if playlist_button then
+        lo = add_layout("tog_playlist")
+        lo.geometry = {x = 127 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45), y = refY - 40, an = 5, w = 24, h = 24}
+        lo.style = osc_styles.control_3
+        lo.visible = (osc_param.playresx >= 600 - outeroffset)
+    end
 
-    -- Volumebar
-    lo = new_element("volumebarbg", "box")
-    lo.visible = (osc_param.playresx >= 920 - outeroffset) and user_opts.volume_control
-    lo = add_layout("volumebarbg")
-    lo.geometry = {x = 200 - (playlist_button and 0 or 45), y = refY - 40, an = 4, w = 80, h = 4}
-    lo.layer = 13
-    lo.alpha[1] = 128
-    lo.style = user_opts.volumebar_match_seek_color and osc_styles.seekbar_bg or osc_styles.volumebar_bg
-    
-    lo = add_layout("volumebar")
-    lo.geometry = {x = 200 - (playlist_button and 0 or 45), y = refY - 40, an = 4, w = 80, h = 10}
-    lo.style = user_opts.volumebar_match_seek_color and osc_styles.seekbar_fg or osc_styles.volumebar_fg
-    lo.slider.gap = 3
-    lo.slider.tooltip_style = osc_styles.tooltip
-    lo.slider.tooltip_an = 2
+    if audio_track then
+        -- Volume
+        lo = add_layout("vol_ctrl")
+        lo.geometry = {x = 172 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45) - (playlist_button and 0 or 45), y = refY - 40, an = 5, w = 24, h = 24}
+        lo.style = osc_styles.control_3
+        lo.visible = (osc_param.playresx >= 600 - outeroffset)
+
+        -- Volumebar
+        lo = new_element("volumebarbg", "box")
+        lo.visible = (osc_param.playresx >= 920 - outeroffset) and user_opts.volume_control
+        lo = add_layout("volumebarbg")
+        lo.geometry = {x = 200 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45) - (playlist_button and 0 or 45), y = refY - 40, an = 4, w = 80, h = 4}
+        lo.layer = 13
+        lo.alpha[1] = 128
+        lo.style = user_opts.volumebar_match_seek_color and osc_styles.seekbar_bg or osc_styles.volumebar_bg
+
+        lo = add_layout("volumebar")
+        lo.geometry = {x = 200 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45) - (playlist_button and 0 or 45), y = refY - 40, an = 4, w = 80, h = 10}
+        lo.style = user_opts.volumebar_match_seek_color and osc_styles.seekbar_fg or osc_styles.volumebar_fg
+        lo.slider.gap = 3
+        lo.slider.tooltip_style = osc_styles.tooltip
+        lo.slider.tooltip_an = 2
+    end
 
     -- Fullscreen/Info/Pin/Screenshot/Loop/Speed
     if fullscreen_button then
@@ -2956,7 +2965,6 @@ local function render()
         end
 
         if now < state.anistart + (user_opts.fadeduration / 1000) then
-
             if state.anitype == "in" then --fade in
                 osc_visible(true)
                 state.animation = scale_value(state.anistart,
@@ -2967,7 +2975,6 @@ local function render()
                     (state.anistart + (user_opts.fadeduration / 1000)),
                     0, 255, now)
             end
-
         else
             if state.anitype == "out" then
                 osc_visible(false)
@@ -3409,14 +3416,21 @@ mp.observe_property("pause", "bool", function(name, enabled)
     pause_state(name, enabled)
     if user_opts.showonpause then
         if enabled then
-            if user_opts.keeponpause then
-                visibility_mode("always", true)
-            else
+            -- save mode if a temporary change is needed
+            if not state.temp_visibility_mode and user_opts.visibility ~= "always" then
+                state.temp_visibility_mode = user_opts.visibility
                 visibility_mode("auto", true)
             end
             show_osc()
         else
-            visibility_mode("auto", true)
+            -- restore mode if it was changed temporarily
+            if state.temp_visibility_mode then
+                visibility_mode(state.temp_visibility_mode, true)
+                state.temp_visibility_mode = nil
+            else
+                -- respect "always" mode on unpause
+                visibility_mode(user_opts.visibility, true)
+            end
         end
     end
 end)
@@ -3439,7 +3453,7 @@ mp.register_script_message("thumbfast-info", function(json)
     end
 end)
 
--- Validate string type user options
+-- validate string type user options
 local function validate_user_opts()
     if user_opts.window_top_bar ~= "auto" and 
        user_opts.window_top_bar ~= "yes" and
