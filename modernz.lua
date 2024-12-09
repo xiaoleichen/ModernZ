@@ -44,6 +44,7 @@ local user_opts = {
     vidscale = "auto",                     -- scale osc with the video
     scalewindowed = 1.0,                   -- osc scale factor when windowed
     scalefullscreen = 1.0,                 -- osc scale factor when fullscreen
+    compact_mode = false,                       -- move the seekbar to the same row as time codes
 
     -- Time and title display
     show_title = true,                     -- show title in the OSC (above seekbar)
@@ -1581,12 +1582,13 @@ end
 --
 
 local layouts = {}
+local compact_mode_y_offset = 26
 
 -- Default layout
 layouts["modern"] = function ()
     local osc_geo = {
         w = osc_param.playresx,
-        h = not user_opts.show_title and 110 or 160
+        h = (not user_opts.show_title and 110 or 160) - (user_opts.compact_mode and compact_mode_y_offset or 0)
     }
 
     -- origin of the controllers, left/bottom corner
@@ -1630,16 +1632,26 @@ layouts["modern"] = function ()
     local refY = posY
 
     -- Seekbar
+    local seekbar_y_offset = 100
+    local seekbar_margin = 50
+    if user_opts.compact_mode then
+        seekbar_y_offset = seekbar_y_offset - compact_mode_y_offset
+        seekbar_margin = seekbar_margin + 156
+        if state.tc_ms then
+            seekbar_margin = seekbar_margin + 64
+        end
+    end
+
     new_element("seekbarbg", "box")
     lo = add_layout("seekbarbg")
-    lo.geometry = {x = refX, y = refY - 100, an = 5, w = osc_geo.w - 50, h = 4}
+    lo.geometry = {x = refX, y = refY - seekbar_y_offset, an = 5, w = osc_geo.w - seekbar_margin, h = 4}
     lo.layer = 13
     lo.style = osc_styles.seekbar_bg
     lo.alpha[1] = 128
     lo.alpha[3] = 128
 
     lo = add_layout("seekbar")
-    lo.geometry = {x = refX, y = refY - 100, an = 5, w = osc_geo.w - 50, h = 18}
+    lo.geometry = {x = refX, y = refY - seekbar_y_offset, an = 5, w = osc_geo.w - seekbar_margin, h = 18}
     lo.style = osc_styles.seekbar_fg
     lo.slider.gap = 7
     lo.slider.tooltip_style = osc_styles.tooltip
@@ -1671,7 +1683,7 @@ layouts["modern"] = function ()
     local outeroffset = (chapter_skip_buttons and 0 or 100) + (jump_buttons and 0 or 100)
 
     -- Title
-    geo = {x = 25, y = refY - 122, an = 1, w = osc_geo.w - 50 - (loop_button and 45 or 0) - (speed_button and 45 or 0), h = 35}
+    geo = {x = 25, y = refY - 122 + (user_opts.compact_mode and compact_mode_y_offset or 0), an = 1, w = osc_geo.w - 50 - (loop_button and 45 or 0) - (speed_button and 45 or 0), h = 35}
     lo = add_layout("title")
     lo.geometry = geo
     lo.style = string.format("%s{\\clip(0,%f,%f,%f)}", osc_styles.title, geo.y - geo.h, geo.x + geo.w, geo.y + geo.h)
@@ -1734,7 +1746,7 @@ layouts["modern"] = function ()
     lo.style = osc_styles.time
 
     -- Chapter Title (next to timestamp)
-    if user_opts.show_chapter_title then
+    if user_opts.show_chapter_title and not user_opts.compact_mode then
         lo = add_layout("separator")
         lo.geometry = {x = 73 + (state.tc_ms and 32 or 0) + (show_hours and 20 or 0), y = refY - 84, an = 7, w = 30, h = 20}
         lo.style = osc_styles.time
@@ -1994,7 +2006,7 @@ local function adjust_subtitles(visible)
     if visible and user_opts.raise_subtitles and state.osc_visible == true then
         local w, h = mp.get_osd_size()
         if h > 0 then
-            local raise_factor = user_opts.raise_subtitle_amount
+            local raise_factor = user_opts.raise_subtitle_amount - (user_opts.compact_mode and compact_mode_y_offset or 0)
 
             -- adjust for extreme scales
             if scale > 1 then
