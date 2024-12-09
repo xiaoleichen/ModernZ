@@ -82,6 +82,7 @@ local user_opts = {
 
     volume_control = true,                 -- show mute button and volume slider
     volume_control_type = "linear",        -- volume scale type: "linear" or "logarithmic"
+    chapters_button = false,               -- show chapters button
     playlist_button = false,               -- show playlist button: Left-click for simple playlist, Right-click for interactive playlist
     hide_empty_playlist_button = true,     -- hide playlist button when no playlist exists
     gray_empty_playlist_button = true,     -- gray out the playlist button when no playlist exists
@@ -249,6 +250,7 @@ local icons = {
 
     zoom_in = "\238\186\142",
     zoom_out = "\238\186\143",
+    chapters = "\238\161\161",
 }
 
 --- localization
@@ -1653,6 +1655,7 @@ layouts["modern"] = function ()
 
     local audio_track = audio_track_count > 0
     local subtitle_track = sub_track_count > 0
+    local chapters_button = mp.get_property_number("chapter", -1) >= 0 and user_opts.chapters_button
     local jump_buttons = user_opts.jump_buttons
     local chapter_skip_buttons = user_opts.chapter_skip_buttons
     local track_nextprev_buttons = user_opts.track_nextprev_buttons
@@ -1757,10 +1760,18 @@ layouts["modern"] = function ()
         lo.visible = (osc_param.playresx >= 600 - outeroffset)
     end
 
+    -- Chapter button
+    if chapters_button then
+        lo = add_layout("chapters")
+        lo.geometry = {x = 127 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45), y = refY - 40, an = 5, w = 24, h = 24}
+        lo.style = osc_styles.control_3
+        lo.visible = (osc_param.playresx >= 600 - outeroffset)
+    end
+
     -- Playlist
     if playlist_button then
         lo = add_layout("tog_playlist")
-        lo.geometry = {x = 127 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45), y = refY - 40, an = 5, w = 24, h = 24}
+        lo.geometry = {x = 172 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45) - (chapters_button and 0 or 45), y = refY - 40, an = 5, w = 24, h = 24}
         lo.style = osc_styles.control_3
         lo.visible = (osc_param.playresx >= 600 - outeroffset)
     end
@@ -1768,7 +1779,7 @@ layouts["modern"] = function ()
     if audio_track then
         -- Volume
         lo = add_layout("vol_ctrl")
-        lo.geometry = {x = 172 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45) - (playlist_button and 0 or 45), y = refY - 40, an = 5, w = 24, h = 24}
+        lo.geometry = {x = 217 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45) - (playlist_button and 0 or 45) - (chapters_button and 0 or 45), y = refY - 40, an = 5, w = 24, h = 24}
         lo.style = osc_styles.control_3
         lo.visible = (osc_param.playresx >= 600 - outeroffset)
 
@@ -1776,13 +1787,13 @@ layouts["modern"] = function ()
         lo = new_element("volumebarbg", "box")
         lo.visible = (osc_param.playresx >= 920 - outeroffset) and user_opts.volume_control
         lo = add_layout("volumebarbg")
-        lo.geometry = {x = 200 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45) - (playlist_button and 0 or 45), y = refY - 40, an = 4, w = 80, h = 4}
+        lo.geometry = {x = 245 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45) - (playlist_button and 0 or 45) - (chapters_button and 0 or 45), y = refY - 40, an = 4, w = 80, h = 4}
         lo.layer = 13
         lo.alpha[1] = 128
         lo.style = user_opts.volumebar_match_seek_color and osc_styles.seekbar_bg or osc_styles.volumebar_bg
 
         lo = add_layout("volumebar")
-        lo.geometry = {x = 200 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45) - (playlist_button and 0 or 45), y = refY - 40, an = 4, w = 80, h = 10}
+        lo.geometry = {x = 245 - (audio_track and 0 or 45) - (subtitle_track and 0 or 45) - (playlist_button and 0 or 45) - (chapters_button and 0 or 45), y = refY - 40, an = 4, w = 80, h = 10}
         lo.style = user_opts.volumebar_match_seek_color and osc_styles.seekbar_fg or osc_styles.volumebar_fg
         lo.slider.gap = 3
         lo.slider.tooltip_style = osc_styles.tooltip
@@ -2243,11 +2254,31 @@ local function osc_init()
     ne.eventresponder["wheel_down_press"] = command_callback(user_opts.sub_track_wheel_down_command)
     ne.eventresponder["wheel_up_press"] = command_callback(user_opts.sub_track_wheel_up_command)
 
+    --chapters
+    ne = new_element("chapters", "button")
+    local chapter_index = mp.get_property_number("chapter", -1)
+    ne.enabled = chapter_index >= 0
+    ne.off = chapter_index < 0
+    ne.visible = (osc_param.playresx >= 750 - outeroffset)
+    ne.content = icons.chapters
+    ne.tooltip_style = osc_styles.tooltip
+    ne.tooltipF = function ()
+        local chapters = mp.get_property_native("chapter-list", {})
+        local chapter_index = mp.get_property_number("chapter", -1)
+        local chapter_title = (chapters[chapter_index + 1] and chapters[chapter_index + 1].title ~= "") and chapters[chapter_index + 1].title or locale.na
+        chapter_title = mp.command_native({"escape-ass", chapter_title})
+        return string.format(user_opts.chapter_fmt, chapter_title)
+    end
+    ne.nothingavailable = chapter_index < 0
+    ne.eventresponder["mbtn_left_up"] = command_callback(user_opts.chapter_title_mbtn_left_command)
+    ne.eventresponder["mbtn_right_up"] = command_callback(user_opts.chapter_title_mbtn_right_command)
+    ne.eventresponder["shift+mbtn_left_down"] = function () mp.command("show-text ${chapter-list} 3000") end
+
     --tog_playlist
     ne = new_element("tog_playlist", "button")
     ne.enabled = have_pl or not user_opts.gray_empty_playlist_button
     ne.off = not have_pl and user_opts.gray_empty_playlist_button
-    ne.visible = (osc_param.playresx >= (state.is_image and 250 or 750) - outeroffset)
+    ne.visible = (osc_param.playresx >= (state.is_image and 250 or 850) - outeroffset)
     ne.content = icons.playlist
     ne.tooltip_style = osc_styles.tooltip
     ne.tooltipF = have_pl and locale.playlist .. " [" .. pl_pos .. "/" .. pl_count .. "]" or locale.playlist
