@@ -368,7 +368,7 @@ local window_control_box_width = 150
 local is_december = os.date("*t").month == 12
 local UNICODE_MINUS = string.char(0xe2, 0x88, 0x92)  -- UTF-8 for U+2212 MINUS SIGN
 local iconfont = "fluent-system-icons"
-local compact_mode_y_offset = 26
+local compact_mode_y_offset = 25
 
 local function osc_color_convert(color)
     return color:sub(6,7) .. color:sub(4,5) ..  color:sub(2,3)
@@ -1637,9 +1637,12 @@ layouts["modern"] = function ()
     local seekbar_margin = 50
     if user_opts.compact_mode then
         seekbar_y_offset = seekbar_y_offset - compact_mode_y_offset
-        seekbar_margin = seekbar_margin + 156
+        seekbar_margin = seekbar_margin + 112
+        if mp.get_property_number("duration", 0) >= 3600 then
+            seekbar_margin = seekbar_margin + 46
+        end
         if state.tc_ms then
-            seekbar_margin = seekbar_margin + 64
+            seekbar_margin = seekbar_margin + 66
         end
     end
 
