@@ -153,6 +153,7 @@ local user_opts = {
     seekrangealpha = 150,                  -- transparency of the seek range
     livemarkers = true,                    -- update chapter markers on the seekbar when duration changes
     seekbarkeyframes = false,              -- use keyframes when dragging the seekbar
+    show_chapter_markers = true,           -- show chapter markers on seekbar
 
     automatickeyframemode = true,          -- automatically set keyframes for the seekbar based on video length
     automatickeyframelimit = 600,          -- videos longer than this (in seconds) will have keyframes on the seekbar 
@@ -2529,6 +2530,9 @@ local function osc_init()
     ne.thumbnailable = true
     state.slider_element = ne.enabled and ne or nil  -- used for forced_title
     ne.slider.markerF = function ()
+        if not user_opts.show_chapter_markers then
+            return {}
+        end
         local duration = mp.get_property_number("duration")
         if duration ~= nil then
             local chapters = mp.get_property_native("chapter-list", {})
