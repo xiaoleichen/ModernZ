@@ -2173,41 +2173,35 @@ local function osc_init()
     ne = new_element("jump_backward", "button")
     ne.softrepeat = user_opts.jump_softrepeat == true
     ne.content = jump_icon[1]
-    ne.eventresponder["mbtn_left_down"] = 
-        function ()
-            mp.commandv("seek", -jump_amount, jump_mode)
-            mp.osd_message(get_progress_osd_msg(false))
-        end
-    ne.eventresponder["mbtn_right_down"] =
-        function ()
-            mp.commandv("seek", -jump_more_amount, jump_mode)
-            mp.osd_message(get_progress_osd_msg(false))
-        end
-    ne.eventresponder["shift+mbtn_left_down"] =
-        function ()
-            mp.commandv("frame-back-step")
-            mp.osd_message(get_progress_osd_msg(false))
-        end
+    ne.eventresponder["mbtn_left_down"] = function ()
+        mp.commandv("seek", -jump_amount, jump_mode)
+        mp.osd_message(get_progress_osd_msg(false))
+    end
+    ne.eventresponder["mbtn_right_down"] = function ()
+        mp.commandv("seek", -jump_more_amount, jump_mode)
+        mp.osd_message(get_progress_osd_msg(false))
+    end
+    ne.eventresponder["shift+mbtn_left_down"] = function ()
+        mp.commandv("frame-back-step")
+        mp.osd_message(get_progress_osd_msg(false))
+    end
 
     --jump_forward
     ne = new_element("jump_forward", "button")
     ne.softrepeat = user_opts.jump_softrepeat == true
     ne.content = jump_icon[2]
-    ne.eventresponder["mbtn_left_down"] =
-        function ()
-            mp.commandv("seek", jump_amount, jump_mode)
-            mp.osd_message(get_progress_osd_msg(true))
-        end
-    ne.eventresponder["mbtn_right_down"] =
-        function ()
-            mp.commandv("seek", jump_more_amount, jump_mode)
-            mp.osd_message(get_progress_osd_msg(true))
-        end
-    ne.eventresponder["shift+mbtn_left_down"] =
-        function ()
-            mp.commandv("frame-step")
-            mp.osd_message(get_progress_osd_msg(true))
-        end
+    ne.eventresponder["mbtn_left_down"] = function ()
+        mp.commandv("seek", jump_amount, jump_mode)
+        mp.osd_message(get_progress_osd_msg(true))
+    end
+    ne.eventresponder["mbtn_right_down"] = function ()
+        mp.commandv("seek", jump_more_amount, jump_mode)
+        mp.osd_message(get_progress_osd_msg(true))
+    end
+    ne.eventresponder["shift+mbtn_left_down"] = function ()
+        mp.commandv("frame-step")
+        mp.osd_message(get_progress_osd_msg(true))
+    end
 
     --chapter_backward
     ne = new_element("chapter_backward", "button")
@@ -2645,8 +2639,14 @@ local function osc_init()
             state.playingWhilstSeeking = false
         end
     end
-    ne.eventresponder["wheel_up_press"] = function () mp.commandv("seek", 10) end
-    ne.eventresponder["wheel_down_press"] = function () mp.commandv("seek", -10) end
+    ne.eventresponder["wheel_up_press"] = function ()
+        mp.commandv("seek", 10)
+        mp.osd_message(get_progress_osd_msg(true))
+    end
+    ne.eventresponder["wheel_down_press"] = function ()
+        mp.commandv("seek", -10)
+        mp.osd_message(get_progress_osd_msg(false))
+    end
 
     --persistent seekbar
     ne = new_element("persistentseekbar", "slider")
