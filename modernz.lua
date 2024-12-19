@@ -1639,7 +1639,7 @@ layouts["modern"] = function ()
     if user_opts.compact_mode then
         seekbar_y_offset = seekbar_y_offset - compact_mode_y_offset
         seekbar_margin = seekbar_margin + 112
-        if mp.get_property_number("duration", 0) >= 3600 then
+        if mp.get_property_number("duration", 0) >= 3600 or user_opts.time_format ~= "dynamic" then
             seekbar_margin = seekbar_margin + 46
         end
         if state.tc_ms then
