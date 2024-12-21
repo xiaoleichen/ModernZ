@@ -1705,7 +1705,7 @@ layouts["modern"] = function ()
     -- cache info
     if user_opts.cache_info then
         lo = add_layout("cache_info")
-        lo.geometry = {x = 25, y = refY -109, an = 1, w = 160, h = 20}
+        lo.geometry = {x = 25, y = refY -109 + (user_opts.compact_mode and compact_mode_y_offset or 0), an = 1, w = 160, h = 20}
         lo.style = osc_styles.cache
     end
 
