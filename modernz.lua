@@ -176,8 +176,8 @@ local user_opts = {
     -- customize the button function based on mouse action
 
     -- title above seekbar mouse actions
-    title_mbtn_left_command = "script-binding select/select-playlist; script-message-to modernz osc-hide",
-    title_mbtn_right_command = "script-binding stats/display-page-5",
+    title_mbtn_left_command = "script-binding stats/display-page-5",
+    title_mbtn_right_command = "show-text ${path}",
 
     -- playlist button mouse actions
     playlist_mbtn_left_command = "script-binding select/select-playlist; script-message-to modernz osc-hide",
@@ -188,15 +188,15 @@ local user_opts = {
 
     -- audio button mouse actions
     audio_track_mbtn_left_command = "script-binding select/select-aid; script-message-to modernz osc-hide",
-    audio_track_mbtn_right_command = "osd-msg cycle audio",
-    audio_track_wheel_down_command = "osd-msg cycle audio",
-    audio_track_wheel_up_command = "osd-msg cycle audio down",
+    audio_track_mbtn_right_command = "cycle audio",
+    audio_track_wheel_down_command = "cycle audio",
+    audio_track_wheel_up_command = "cycle audio down",
 
     -- subtitle button mouse actions
     sub_track_mbtn_left_command = "script-binding select/select-sid; script-message-to modernz osc-hide",
-    sub_track_mbtn_right_command = "osd-msg cycle sub",
-    sub_track_wheel_down_command = "osd-msg cycle sub",
-    sub_track_wheel_up_command = "osd-msg cycle sub down",
+    sub_track_mbtn_right_command = "cycle sub",
+    sub_track_wheel_down_command = "cycle sub",
+    sub_track_wheel_up_command = "cycle sub down",
 
     -- chapter skip buttons mouse actions
     chapter_prev_mbtn_left_command = "osd-msg add chapter -1",
@@ -2166,7 +2166,7 @@ local function osc_init()
     ne.content = icons.previous
     ne.enabled = (pl_pos > 1) or (loop ~= "no")
     ne.eventresponder["mbtn_left_up"] = function () mp.commandv("playlist-prev", "weak") end
-    ne.eventresponder["mbtn_right_up"] = function () mp.command("show-text ${playlist} 3000") end
+    ne.eventresponder["mbtn_right_up"] = function () mp.command("script-binding select/select-playlist; script-message-to modernz osc-hide") end
     ne.eventresponder["shift+mbtn_left_down"] = function () mp.command("show-text ${playlist} 3000") end
 
     --next
@@ -2175,7 +2175,7 @@ local function osc_init()
     ne.content = icons.next
     ne.enabled = (have_pl and (pl_pos < pl_count)) or (loop ~= "no")
     ne.eventresponder["mbtn_left_up"] = function () mp.commandv("playlist-next", "weak") end
-    ne.eventresponder["mbtn_right_up"] = function () mp.command("show-text ${playlist} 3000") end
+    ne.eventresponder["mbtn_right_up"] = function () mp.command("script-binding select/select-playlist; script-message-to modernz osc-hide") end
     ne.eventresponder["shift+mbtn_left_down"] = function () mp.command("show-text ${playlist} 3000") end
 
     --play control buttons
@@ -2450,7 +2450,8 @@ local function osc_init()
     ne.content = function () return state.fullscreen and icons.fullscreen_exit or icons.fullscreen end
     ne.visible = (osc_param.playresx >= 250)
     ne.eventresponder["mbtn_left_up"] = function () mp.commandv("cycle", "fullscreen") end
-
+    ne.eventresponder["mbtn_right_up"] = function () mp.commandv("cycle", "window-maximized") end
+    
     --tog_info
     ne = new_element("tog_info", "button")
     ne.content = icons.info
@@ -3178,7 +3179,7 @@ local function render()
 
     -- submit
     set_osd(osc_param.playresy * osc_param.display_aspect,
-            osc_param.playresy, ass.text, 1000)
+            osc_param.playresy, ass.text, -1)
 end
 
 -- called by mpv on every frame
