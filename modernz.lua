@@ -1719,7 +1719,7 @@ layouts["modern"] = function ()
     local outeroffset = (chapter_skip_buttons and 0 or 100) + (jump_buttons and 0 or 100)
 
     -- Title
-    geo = {x = 25, y = refY - 122 + (user_opts.compact_mode and compact_mode_y_offset or 0), an = 1, w = osc_geo.w - 50 - (loop_button and 45 or 0) - (speed_button and 45 or 0), h = 35}
+    geo = {x = 25, y = refY - 122 + (user_opts.compact_mode and compact_mode_y_offset or 0), an = 1, w = osc_geo.w - 50 - (user_opts.cache_info and 220 or 0), h = 35}
     lo = add_layout("title")
     lo.geometry = geo
     lo.style = string.format("%s{\\clip(0,%f,%f,%f)}", osc_styles.title, geo.y - geo.h, geo.x + geo.w, geo.y + geo.h)
@@ -1728,7 +1728,7 @@ layouts["modern"] = function ()
     -- cache info
     if user_opts.cache_info then
         lo = add_layout("cache_info")
-        lo.geometry = {x = osc_geo.w - 25, y = refY -123 + (user_opts.compact_mode and compact_mode_y_offset or 0), an = 9, w = 160, h = 20}
+        lo.geometry = {x = osc_geo.w - 25, y = refY -142 + (user_opts.compact_mode and compact_mode_y_offset or 0), an = 9, w = 160, h = 20}
         lo.style = osc_styles.cache
     end
 
